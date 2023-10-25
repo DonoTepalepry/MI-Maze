@@ -179,7 +179,6 @@ while True:
         player_y = prev_y
 
     pygame.draw.rect(sc, pygame.Color('red'), (player_x + 4, player_y + 4, TILE - 6, TILE - 6))
-    pygame.draw.circle(sc, 'blue', (player_x - 2, player_y + (TILE // 2)), 1)
 
     pygame.display.flip()
     clock.tick(100)
