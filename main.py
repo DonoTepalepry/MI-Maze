@@ -1,5 +1,6 @@
 import pygame
 from random import choice
+import webcolors
 
 RES = WIDTH, HEIGHT = 800, 700
 TILE = 50
@@ -157,27 +158,34 @@ while True:
 
     pressed_keys = pygame.key.get_pressed()
     if inBounds:
-        if pressed_keys[pygame.K_UP]:
+        if pressed_keys[pygame.K_UP] and not sc.get_at((player_x + (TILE // 2), player_y + 2))[:3] == (0, 100, 0):
             prev_x, prev_y = player_x, player_y
             player_y = player_y - TILE
-            pygame.time.wait(100)
-        elif pressed_keys[pygame.K_DOWN]:
+            pygame.time.wait(250)
+        elif pressed_keys[pygame.K_DOWN] and not sc.get_at((player_x + (TILE // 2), player_y + TILE))[:3] == (0, 100, 0):
             prev_x, prev_y = player_x, player_y
             player_y = player_y + TILE
-            pygame.time.wait(100)
-        elif pressed_keys[pygame.K_RIGHT]:
+            pygame.time.wait(250)
+        elif pressed_keys[pygame.K_RIGHT] and not sc.get_at((player_x + TILE, player_y + (TILE // 2)))[:3] == (0, 100, 0):
             prev_x, prev_y = player_x, player_y
             player_x = player_x + TILE
-            pygame.time.wait(100)
-        elif pressed_keys[pygame.K_LEFT]:
+            pygame.time.wait(250)
+        elif pressed_keys[pygame.K_LEFT] and not sc.get_at((player_x, player_y + (TILE // 2)))[:3] == (0, 100, 0):
             prev_x, prev_y = player_x, player_y
             player_x = player_x - TILE
-            pygame.time.wait(100)
+            pygame.time.wait(250)
     else:
         player_x = prev_x
         player_y = prev_y
 
-    pygame.draw.rect(sc, pygame.Color('red'), (player_x + 2, player_y + 2, TILE - 2, TILE - 2))
+    mousecolor = pygame.mouse.get_pos()
+    colorCheck = sc.get_at((player_x + TILE, player_y + (TILE // 2)))[:3]
+    #colorCheck = sc.get_at(mousecolor)[:3]
+    print(colorCheck)
+    print(webcolors.rgb_to_name(colorCheck))
+
+    pygame.draw.rect(sc, pygame.Color('red'), (player_x + 4, player_y + 4, TILE - 6, TILE - 6))
+    pygame.draw.circle(sc, 'blue', (player_x - 2, player_y + (TILE // 2)), 1)
 
     pygame.display.flip()
     clock.tick(100)
