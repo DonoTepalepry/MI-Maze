@@ -178,12 +178,6 @@ while True:
         player_x = prev_x
         player_y = prev_y
 
-    mousecolor = pygame.mouse.get_pos()
-    colorCheck = sc.get_at((player_x + TILE - 1, player_y + (TILE // 2)))[:3]
-    #colorCheck = sc.get_at(mousecolor)[:3]
-    print(colorCheck)
-    print(webcolors.rgb_to_name(colorCheck))
-
     pygame.draw.rect(sc, pygame.Color('red'), (player_x + 4, player_y + 4, TILE - 6, TILE - 6))
     pygame.draw.circle(sc, 'blue', (player_x - 2, player_y + (TILE // 2)), 1)
 
