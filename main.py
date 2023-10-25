@@ -158,15 +158,15 @@ while True:
 
     pressed_keys = pygame.key.get_pressed()
     if inBounds:
-        if pressed_keys[pygame.K_UP] and not sc.get_at((player_x + (TILE // 2), player_y + 2))[:3] == (0, 100, 0):
+        if pressed_keys[pygame.K_UP] and not sc.get_at((player_x + (TILE // 2), player_y + 1))[:3] == (0, 100, 0):
             prev_x, prev_y = player_x, player_y
             player_y = player_y - TILE
             pygame.time.wait(250)
-        elif pressed_keys[pygame.K_DOWN] and not sc.get_at((player_x + (TILE // 2), player_y + TILE))[:3] == (0, 100, 0):
+        elif pressed_keys[pygame.K_DOWN] and not sc.get_at((player_x + (TILE // 2), player_y + TILE - 1))[:3] == (0, 100, 0):
             prev_x, prev_y = player_x, player_y
             player_y = player_y + TILE
             pygame.time.wait(250)
-        elif pressed_keys[pygame.K_RIGHT] and not sc.get_at((player_x + TILE, player_y + (TILE // 2)))[:3] == (0, 100, 0):
+        elif pressed_keys[pygame.K_RIGHT] and not sc.get_at((player_x + TILE - 1, player_y + (TILE // 2)))[:3] == (0, 100, 0):
             prev_x, prev_y = player_x, player_y
             player_x = player_x + TILE
             pygame.time.wait(250)
@@ -179,7 +179,7 @@ while True:
         player_y = prev_y
 
     mousecolor = pygame.mouse.get_pos()
-    colorCheck = sc.get_at((player_x + TILE, player_y + (TILE // 2)))[:3]
+    colorCheck = sc.get_at((player_x + TILE - 1, player_y + (TILE // 2)))[:3]
     #colorCheck = sc.get_at(mousecolor)[:3]
     print(colorCheck)
     print(webcolors.rgb_to_name(colorCheck))
