@@ -12,6 +12,9 @@ cnt = 0
 startSet = False
 start_tile = None
 end_tile = None
+player_x, player_y = 0, 0
+prev_x, prev_y = 0, 0
+
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
@@ -149,6 +152,32 @@ while True:
 
     if end_tile:
         pygame.draw.line(sc, (255, 0, 0), (pstart[0], pstart[1]), (pend[0], pend[1]))
+
+    inBounds = pygame.Rect(0+TILE, 0+TILE, WIDTH, HEIGHT).collidepoint(player_x + TILE, player_y + TILE)
+
+    pressed_keys = pygame.key.get_pressed()
+    if inBounds:
+        if pressed_keys[pygame.K_UP]:
+            prev_x, prev_y = player_x, player_y
+            player_y = player_y - TILE
+            pygame.time.wait(100)
+        elif pressed_keys[pygame.K_DOWN]:
+            prev_x, prev_y = player_x, player_y
+            player_y = player_y + TILE
+            pygame.time.wait(100)
+        elif pressed_keys[pygame.K_RIGHT]:
+            prev_x, prev_y = player_x, player_y
+            player_x = player_x + TILE
+            pygame.time.wait(100)
+        elif pressed_keys[pygame.K_LEFT]:
+            prev_x, prev_y = player_x, player_y
+            player_x = player_x - TILE
+            pygame.time.wait(100)
+    else:
+        player_x = prev_x
+        player_y = prev_y
+
+    pygame.draw.rect(sc, pygame.Color('red'), (player_x + 2, player_y + 2, TILE - 2, TILE - 2))
 
     pygame.display.flip()
     clock.tick(100)
