@@ -64,8 +64,7 @@ def start():
             return choice(neighbors) if neighbors else False
             # ^ choses a random neighbor then not sure here but if neighbors true it does nothing otherwise set neigbors to false?
 
-        def check_valid_neighbors(
-                self):  # checks if you can travel to the neigboring cell and if so will add it to self.neigbors
+        def check_valid_neighbors(self):  # checks if you can travel to the neigboring cell and if so will add it to self.neigbors
             self.grid_cells = grid_cells
             top = self.check_cell(self.x, self.y - 1)  # check if top is open
             right = self.check_cell(self.x + 1, self.y)  # check if right is open
