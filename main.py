@@ -1,7 +1,5 @@
-import pygame
+import pygame, math
 from random import choice
-import webcolors
-import math
 
 
 def start():
@@ -9,14 +7,9 @@ def start():
     RES = WIDTH, HEIGHT = 800, 700
     TILE = 50
     cols, rows = WIDTH // TILE, HEIGHT // TILE
-    pos = 0
-    spos = 0
-    cnt = 0
     Set = False
     start_tile = None
     end_tile = None
-    player_x, player_y = 0, 0
-    prev_x, prev_y = 0, 0
     c_cell = None
 
     pygame.init()
@@ -29,12 +22,8 @@ def start():
             self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
             self.visited = False
             self.thickness = 4
-            self.h = None
+            self.heuristic = 0
             self.neighbors = {'top': None, 'right': None, 'bottom': None, 'left': None}
-
-        def draw_current_cell(self):
-            x, y = self.x * TILE, self.y * TILE
-            pygame.draw.rect(sc, pygame.Color('dark cyan'), (x + 2, y + 2, TILE - 2, TILE - 2))
 
         def draw(self, sc):
             x, y = self.x * TILE, self.y * TILE
@@ -47,8 +36,8 @@ def start():
                 pygame.draw.line(sc, pygame.Color('dark green'), (x + TILE, y + TILE), (x, y + TILE), self.thickness)
             if self.walls['left']:
                 pygame.draw.line(sc, pygame.Color('dark green'), (x, y + TILE), (x, y), self.thickness)
-            if self.h:
-                huer = font.render(f'{self.h:.2f}', True, (255, 255, 255))
+            if self.heuristic:
+                huer = font.render(f'{self.heuristic:.2f}', True, (255, 255, 255))
                 sc.blit(huer, (x, y + TILE // 2))
 
         def check_cell(self, x, y):
@@ -75,7 +64,8 @@ def start():
             return choice(neighbors) if neighbors else False
             # ^ choses a random neighbor then not sure here but if neighbors true it does nothing otherwise set neigbors to false?
 
-        def check_valid_neighbors(self): #checks if you can travel to the neigboring cell and if so will add it to self.neigbors
+        def check_valid_neighbors(
+                self):  # checks if you can travel to the neigboring cell and if so will add it to self.neigbors
             self.grid_cells = grid_cells
             top = self.check_cell(self.x, self.y - 1)  # check if top is open
             right = self.check_cell(self.x + 1, self.y)  # check if right is open
@@ -89,6 +79,20 @@ def start():
                 self.neighbors['left'] = left
             if right and not self.walls['right']:
                 self.neighbors['right'] = right
+
+        def print_neighbors(self):
+            neighbors = []
+            if self.neighbors['top']:
+                neighbors.append('top')
+            if self.neighbors['bottom']:
+                neighbors.append('bottom')
+            if self.neighbors['left']:
+                neighbors.append('left')
+            if self.neighbors['right']:
+                neighbors.append('right')
+
+            neighbors_str = ' '.join(neighbors)
+            print(f'Cell id: {self.x},{self.y}. Neighbors: {neighbors_str}')
 
     def remove_walls(current, next):
         dx = current.x - next.x
@@ -126,14 +130,24 @@ def start():
         dist = math.sqrt((mx - finish[0]) ** 2 + (my - finish[1]) ** 2)
         return dist
 
+    def astar(start, end):
+        start_node = start
+        start_node.g = start_node.h = start_node.f = 0
+        end_node = end
+        end_node.g = end_node.h = end_node.f = 0
+
+        open_list = []
+        closed_list = []
+
+        open_list.append(start)
+
     grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
 
     current_cell = grid_cells[0]
     stack = []
     colors, color = [], 40
-
+    gen_neighbors = False
     while True:
-
         sc.fill(pygame.Color('dark cyan'))
 
         for event in pygame.event.get():
@@ -143,14 +157,14 @@ def start():
         [cell.draw(sc) for cell in grid_cells]
         current_cell.visited = True
 
-
         # uncomment below thing to solve
         # [pygame.draw.rect(sc, colors[i], (cell.x * TILE + 5, cell.y * TILE + 5, TILE - 10, TILE - 10), border_radius=12) for i, cell in enumerate(stack)]
 
         if start_tile:
             pygame.draw.circle(sc, 'GREEN', pstart, 10)
             if c_cell:
-                pygame.draw.rect(sc, pygame.Color('red'), (c_cell.x * TILE + 4, c_cell.y * TILE + 4, TILE - 6, TILE - 6))
+                pygame.draw.rect(sc, pygame.Color('red'),
+                                 (c_cell.x * TILE + 4, c_cell.y * TILE + 4, TILE - 6, TILE - 6))
         if end_tile:
             pygame.draw.circle(sc, 'GOLD', pend, 10)
 
@@ -164,6 +178,11 @@ def start():
             current_cell = next_cell
         elif stack:
             current_cell = stack.pop()
+        elif not gen_neighbors:
+            gen_neighbors = True
+            for cell in grid_cells:
+                cell.check_valid_neighbors()
+                cell.print_neighbors()
 
         draw_gui(10, 10)
 
@@ -171,7 +190,6 @@ def start():
             if pygame.mouse.get_pressed()[0]:
                 pstart = pygame.mouse.get_pos()
                 start_tile = pstart[0] // TILE, pstart[1] // TILE
-                print(pstart[0] + pstart[1] * cols)
                 c_cell = grid_cells[start_tile[0] + start_tile[1] * cols]
                 Set = Set + 1
                 pygame.time.wait(500)
@@ -180,38 +198,22 @@ def start():
                 pend = pygame.mouse.get_pos()
                 end_tile = pend[0] // TILE, pend[1] // TILE
                 for cell in grid_cells:
-                    cell.h = distance(cell, end_tile)
-                    print(cell.check_gen_neighbors())
+                    cell.heuristic = distance(cell, end_tile)
                 Set = Set + 1
-
-        inBounds = pygame.Rect(0 + TILE, 0 + TILE, WIDTH, HEIGHT).collidepoint(player_x + TILE, player_y + TILE)
 
         pressed_keys = pygame.key.get_pressed()
         if pressed_keys[pygame.K_r]:
             start()
 
-        if inBounds:
-            if pressed_keys[pygame.K_UP] and Cell.neighbors['top']: #finish later
-                prev_x, prev_y = player_x, player_y
-                player_y = player_y - TILE
-                #pygame.time.wait(250)
-            elif pressed_keys[pygame.K_DOWN] and not sc.get_at((player_x + (TILE // 2), player_y + TILE - 1))[:3] == (
-            0, 100, 0):
-                prev_x, prev_y = player_x, player_y
-                player_y = player_y + TILE
-                #pygame.time.wait(250)
-            elif pressed_keys[pygame.K_RIGHT] and not sc.get_at((player_x + TILE - 1, player_y + (TILE // 2)))[:3] == (
-            0, 100, 0):
-                prev_x, prev_y = player_x, player_y
-                player_x = player_x + TILE
-                #pygame.time.wait(250)
-            elif pressed_keys[pygame.K_LEFT] and not sc.get_at((player_x, player_y + (TILE // 2)))[:3] == (0, 100, 0):
-                prev_x, prev_y = player_x, player_y
-                player_x = player_x - TILE
-                #pygame.time.wait(250)
-        else:
-            player_x = prev_x
-            player_y = prev_y
+        if c_cell:
+            if pressed_keys[pygame.K_UP] and c_cell.neighbors['top']:
+                c_cell = c_cell.neighbors['top']
+            elif pressed_keys[pygame.K_DOWN] and c_cell.neighbors['bottom']:
+                c_cell = c_cell.neighbors['bottom']
+            elif pressed_keys[pygame.K_RIGHT] and c_cell.neighbors['right']:
+                c_cell = c_cell.neighbors['right']
+            elif pressed_keys[pygame.K_LEFT] and c_cell.neighbors['left']:
+                c_cell = c_cell.neighbors['left']
 
         pygame.display.flip()
         if next_cell:
