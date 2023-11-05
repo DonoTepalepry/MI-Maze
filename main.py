@@ -131,11 +131,6 @@ def start():
         return dist
 
     def astar(start, end):
-        start_node = start
-        start_node.g = start_node.h = start_node.f = 0
-        end_node = end
-        end_node.g = end_node.h = end_node.f = 0
-
         open_list = []
         closed_list = []
 
