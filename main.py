@@ -1,16 +1,17 @@
 import pygame, math
 from random import choice
-
+from queue import PriorityQueue
 
 def start():
     grid_cells = None
     RES = WIDTH, HEIGHT = 800, 700
-    TILE = 50
+    TILE = 100          #change size of tiles to make maze larger or smaller
     cols, rows = WIDTH // TILE, HEIGHT // TILE
     Set = False
     start_tile = None
     end_tile = None
     c_cell = None
+    goal = False
 
     pygame.init()
     sc = pygame.display.set_mode(RES)
@@ -129,11 +130,46 @@ def start():
         dist = math.sqrt((mx - finish[0]) ** 2 + (my - finish[1]) ** 2)
         return dist
 
-    def astar(start, end):
-        open_list = []
-        closed_list = []
+    # def aStar(m):
+    #     start = (m[0], m[1])
+    #     g_score = {cell: float('inf') for cell in m.grid}
+    #     g_score[start] = 0
+    #     f_score = {cell: float('inf') for cell in m.grid}
+    #     f_score[start] = distance(start, (1, 5))
+    #
+    #     open = PriorityQueue()
+    #     open.put((distance(start, (1, 5)), distance(start, (1, 5)), start))
+    #     aPath = {}
+    #     while not open.empty():
+    #         currCell = open.get()[2]
+    #         if currCell == (1, 5):
+    #             break
+    #         for d in 'ESNW':
+    #             if m.maze_map[currCell][d] == True:
+    #                 if d == 'E':
+    #                     childCell = (currCell[0], currCell[1] + 1)
+    #                 if d == 'W':
+    #                     childCell = (currCell[0], currCell[1] - 1)
+    #                 if d == 'N':
+    #                     childCell = (currCell[0] - 1, currCell[1])
+    #                 if d == 'S':
+    #                     childCell = (currCell[0] + 1, currCell[1])
+    #
+    #                 temp_g_score = g_score[currCell] + 1
+    #                 temp_f_score = temp_g_score + distance(childCell, (1, 5))
+    #
+    #                 if temp_f_score < f_score[childCell]:
+    #                     g_score[childCell] = temp_g_score
+    #                     f_score[childCell] = temp_f_score
+    #                     open.put((temp_f_score, distance(childCell, (1, 5)), childCell))
+    #                     aPath[childCell] = currCell
+    #     fwdPath = {}
+    #     cell = (1, 5)
+    #     while cell != start:
+    #         fwdPath[aPath[cell]] = cell
+    #         cell = aPath[cell]
+    #     return fwdPath
 
-        open_list.append(start)
 
     grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
 
@@ -160,8 +196,12 @@ def start():
                 pygame.draw.rect(sc, pygame.Color('red'),
                                  (c_cell.x * TILE + 4, c_cell.y * TILE + 4, TILE - 6, TILE - 6))
         if end_tile:
+            # m = rows, cols
             pygame.draw.circle(sc, 'GOLD', pend, 10)
-
+            if (c_cell.x == end_tile[0]) and (c_cell.y == end_tile[1]):
+                goal = True
+                print('goal')
+            # path = aStar(m)
         next_cell = current_cell.check_gen_neighbors()
         if next_cell:
             next_cell.visited = True
@@ -199,14 +239,27 @@ def start():
         if pressed_keys[pygame.K_r]:
             start()
 
-        if c_cell:
-            if pressed_keys[pygame.K_UP] and c_cell.neighbors['top']:
+        if c_cell and not goal:
+            dir = 0     #0 = north, 1 = East, 2 = South, 3 = West
+            # if pressed_keys[pygame.K_UP] and c_cell.neighbors['top']:
+            #     c_cell = c_cell.neighbors['top']
+            # elif pressed_keys[pygame.K_DOWN] and c_cell.neighbors['bottom']:
+            #     c_cell = c_cell.neighbors['bottom']
+            # elif pressed_keys[pygame.K_RIGHT] and c_cell.neighbors['right']:
+            #     c_cell = c_cell.neighbors['right']
+            # elif pressed_keys[pygame.K_LEFT] and c_cell.neighbors['left']:
+            #     c_cell = c_cell.neighbors['left']
+
+
+#i want to add all the heuristics for the cells neighboring the current cell to a list and the check for the minimum value in that list then move to that cell
+
+            if c_cell.neighbors['top']:
                 c_cell = c_cell.neighbors['top']
-            elif pressed_keys[pygame.K_DOWN] and c_cell.neighbors['bottom']:
-                c_cell = c_cell.neighbors['bottom']
-            elif pressed_keys[pygame.K_RIGHT] and c_cell.neighbors['right']:
+            elif c_cell.neighbors['right']:
                 c_cell = c_cell.neighbors['right']
-            elif pressed_keys[pygame.K_LEFT] and c_cell.neighbors['left']:
+            elif c_cell.neighbors['bottom']:
+                c_cell = c_cell.neighbors['bottom']
+            elif c_cell.neighbors['left']:
                 c_cell = c_cell.neighbors['left']
 
         pygame.display.flip()
