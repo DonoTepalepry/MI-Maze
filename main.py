@@ -1,5 +1,5 @@
 import pygame, math
-from random import choice
+import random
 from queue import PriorityQueue
 
 def start():
@@ -12,7 +12,6 @@ def start():
     end_tile = None
     c_cell = None
     goal = False
-
     pygame.init()
     sc = pygame.display.set_mode(RES)
     clock = pygame.time.Clock()
@@ -25,6 +24,7 @@ def start():
             self.thickness = 4
             self.heuristic = 0
             self.neighbors = {'top': None, 'right': None, 'bottom': None, 'left': None}
+            self.been_there = False
 
         def draw(self, sc):
             x, y = self.x * TILE, self.y * TILE
@@ -62,7 +62,7 @@ def start():
                 neighbors.append(bottom)
             if left and not left.visited:  # same
                 neighbors.append(left)
-            return choice(neighbors) if neighbors else False
+            return random.choice(neighbors) if neighbors else False
             # ^ choses a random neighbor then not sure here but if neighbors true it does nothing otherwise set neigbors to false?
 
         def check_valid_neighbors(self):  # checks if you can travel to the neigboring cell and if so will add it to self.neigbors
@@ -240,7 +240,7 @@ def start():
             start()
 
         if c_cell and not goal:
-            dir = 0     #0 = north, 1 = East, 2 = South, 3 = West
+            #dir = 0     #0 = north, 1 = East, 2 = South, 3 = West
             # if pressed_keys[pygame.K_UP] and c_cell.neighbors['top']:
             #     c_cell = c_cell.neighbors['top']
             # elif pressed_keys[pygame.K_DOWN] and c_cell.neighbors['bottom']:
@@ -254,19 +254,22 @@ def start():
 #i want to add all the heuristics for the cells neighboring the current cell to a list and the check for the minimum value in that list then move to that cell
 
             if c_cell.neighbors['top']:
-                c_cell = c_cell.neighbors['top']
-            elif c_cell.neighbors['right']:
-                c_cell = c_cell.neighbors['right']
-            elif c_cell.neighbors['bottom']:
-                c_cell = c_cell.neighbors['bottom']
-            elif c_cell.neighbors['left']:
-                c_cell = c_cell.neighbors['left']
+                if random.randint(0, 100) < 36:
+                    c_cell = c_cell.neighbors['top']
+            if c_cell.neighbors['right']:
+                if random.randint(0, 100) < 36:
+                    c_cell = c_cell.neighbors['right']
+            if c_cell.neighbors['bottom']:
+                if random.randint(0, 100) < 36:
+                    c_cell = c_cell.neighbors['bottom']
+            if c_cell.neighbors['left']:
+                if random.randint(0, 100) < 36:
+                    c_cell = c_cell.neighbors['left']
 
         pygame.display.flip()
         if next_cell:
             clock.tick(100)
         else:
             clock.tick(20)
-
 
 start()
