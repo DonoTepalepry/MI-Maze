@@ -239,7 +239,7 @@ def start():
         if pressed_keys[pygame.K_r]:
             start()
 
-        if c_cell and not goal:
+        if c_cell and not goal and end_tile:
             #dir = 0     #0 = north, 1 = East, 2 = South, 3 = West
             # if pressed_keys[pygame.K_UP] and c_cell.neighbors['top']:
             #     c_cell = c_cell.neighbors['top']
