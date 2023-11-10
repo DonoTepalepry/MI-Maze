@@ -1,7 +1,7 @@
 import pygame, math
 import random
-from queue import PriorityQueue
-
+import heapq
+from functools import total_ordering
 def start():
     grid_cells = None
     RES = WIDTH, HEIGHT = 800, 700
@@ -16,6 +16,7 @@ def start():
     sc = pygame.display.set_mode(RES)
     clock = pygame.time.Clock()
 
+    @total_ordering
     class Cell:
         def __init__(self, x, y):
             self.x, self.y = x, y
@@ -25,6 +26,11 @@ def start():
             self.heuristic = 0
             self.neighbors = {'top': None, 'right': None, 'bottom': None, 'left': None}
             self.been_there = False
+
+        def __eq__(self, other):
+            return (self.x, self.y) == (other.x, other.y)
+        def __lt__(self, other):
+            return (self.x, self.y) < (other.x, other.y)
 
         def draw(self, sc):
             x, y = self.x * TILE, self.y * TILE
@@ -49,12 +55,12 @@ def start():
 
         def check_gen_neighbors(self):
             self.grid_cells = grid_cells
-            neighbors = []  # create empty list called neigbors
+            neighbors = []  # create empty list called neighbors
             top = self.check_cell(self.x, self.y - 1)  # check if top is open
             right = self.check_cell(self.x + 1, self.y)  # check if right is open
             bottom = self.check_cell(self.x, self.y + 1)  # check if bottom is open
             left = self.check_cell(self.x - 1, self.y)  # check if left is open
-            if top and not top.visited:  # if top is open and has not been visited then add it to neigbors list
+            if top and not top.visited:  # if top is open and has not been visited then add it to neighbors list
                 neighbors.append(top)
             if right and not right.visited:  # same but right
                 neighbors.append(right)
@@ -130,46 +136,33 @@ def start():
         dist = math.sqrt((mx - finish[0]) ** 2 + (my - finish[1]) ** 2)
         return dist
 
-    # def aStar(m):
-    #     start = (m[0], m[1])
-    #     g_score = {cell: float('inf') for cell in m.grid}
-    #     g_score[start] = 0
-    #     f_score = {cell: float('inf') for cell in m.grid}
-    #     f_score[start] = distance(start, (1, 5))
-    #
-    #     open = PriorityQueue()
-    #     open.put((distance(start, (1, 5)), distance(start, (1, 5)), start))
-    #     aPath = {}
-    #     while not open.empty():
-    #         currCell = open.get()[2]
-    #         if currCell == (1, 5):
-    #             break
-    #         for d in 'ESNW':
-    #             if m.maze_map[currCell][d] == True:
-    #                 if d == 'E':
-    #                     childCell = (currCell[0], currCell[1] + 1)
-    #                 if d == 'W':
-    #                     childCell = (currCell[0], currCell[1] - 1)
-    #                 if d == 'N':
-    #                     childCell = (currCell[0] - 1, currCell[1])
-    #                 if d == 'S':
-    #                     childCell = (currCell[0] + 1, currCell[1])
-    #
-    #                 temp_g_score = g_score[currCell] + 1
-    #                 temp_f_score = temp_g_score + distance(childCell, (1, 5))
-    #
-    #                 if temp_f_score < f_score[childCell]:
-    #                     g_score[childCell] = temp_g_score
-    #                     f_score[childCell] = temp_f_score
-    #                     open.put((temp_f_score, distance(childCell, (1, 5)), childCell))
-    #                     aPath[childCell] = currCell
-    #     fwdPath = {}
-    #     cell = (1, 5)
-    #     while cell != start:
-    #         fwdPath[aPath[cell]] = cell
-    #         cell = aPath[cell]
-    #     return fwdPath
+    def astar(cells, start, goal):
+        if start == goal:
+            return[]
+        explored = set()
+        queue = []
+        starttup = (0, [start], start)
+        heapq.heappush(queue, starttup)
 
+        while queue:
+            print(heapq.heappop(queue))
+            cost, path, cell = heapq.heappop(queue)
+            if cell in explored:
+                continue
+
+            if cell == goal:
+                return path
+
+            explored.add(cell)
+
+            cost -= cell.heuristic
+            neighbors = sorted([x for x in cells.neighbors(cell)])
+            for next in neighbors:
+                new_cost = cost + 1 + cell.heuristic
+                next_path = [x for x in path]
+                next_path.append(next)
+
+                heapq.heappush(queue, (new_cost, next_path, next))
 
     grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
 
@@ -196,12 +189,10 @@ def start():
                 pygame.draw.rect(sc, pygame.Color('red'),
                                  (c_cell.x * TILE + 4, c_cell.y * TILE + 4, TILE - 6, TILE - 6))
         if end_tile:
-            # m = rows, cols
             pygame.draw.circle(sc, 'GOLD', pend, 10)
             if (c_cell.x == end_tile[0]) and (c_cell.y == end_tile[1]):
                 goal = True
                 print('goal')
-            # path = aStar(m)
         next_cell = current_cell.check_gen_neighbors()
         if next_cell:
             next_cell.visited = True
@@ -231,8 +222,8 @@ def start():
             if pygame.mouse.get_pressed()[0]:
                 pend = pygame.mouse.get_pos()
                 end_tile = pend[0] // TILE, pend[1] // TILE
-                for cell in grid_cells:
-                    cell.heuristic = distance(cell, end_tile)
+                # for cell in grid_cells:
+                #     cell.heuristic = distance(cell, end_tile)
                 Set = Set + 1
 
         pressed_keys = pygame.key.get_pressed()
@@ -240,7 +231,10 @@ def start():
             start()
 
         if c_cell and not goal and end_tile:
-            #dir = 0     #0 = north, 1 = East, 2 = South, 3 = West
+            ...
+            # endconv = grid_cells[end_tile[0] + end_tile[1] * cols]
+            # astar(c_cell, start_tile, endconv)
+            # print(endconv)
             # if pressed_keys[pygame.K_UP] and c_cell.neighbors['top']:
             #     c_cell = c_cell.neighbors['top']
             # elif pressed_keys[pygame.K_DOWN] and c_cell.neighbors['bottom']:
@@ -250,9 +244,7 @@ def start():
             # elif pressed_keys[pygame.K_LEFT] and c_cell.neighbors['left']:
             #     c_cell = c_cell.neighbors['left']
 
-
-#i want to add all the heuristics for the cells neighboring the current cell to a list and the check for the minimum value in that list then move to that cell
-
+# replace start_tile and end_tile, convert the x and y cords into cell hint hint lambda function
             if c_cell.neighbors['top']:
                 if random.randint(0, 100) < 36:
                     c_cell = c_cell.neighbors['top']
